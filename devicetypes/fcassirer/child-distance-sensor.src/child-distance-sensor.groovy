@@ -27,7 +27,7 @@ metadata {
 		capability "Sensor"
 
 		attribute "lastUpdated", "String"
-        attribute "ultrasonic", "Number"
+        attribute "distance", "Number"
     }
 
 	tiles(scale: 2) {
