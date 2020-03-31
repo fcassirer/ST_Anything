@@ -33,14 +33,14 @@ metadata {
 	tiles(scale: 2) {
 		multiAttributeTile(name: "distance", type: "distance", width: 6, height: 4, canChangeIcon: true) {
 			tileAttribute("device.distance", key: "PRIMARY_CONTROL") {
-				attributeState("distance", label: '${currentValue}%', unit:"%", defaultState: true,
+				attributeState("distance", label: '${currentValue}%', unit:"cm", defaultState: true,
 						backgroundColors: [
 							[value: 80, color: "#767676"],
 							[value: 50, color: "#ffa81e"],
 							[value: 20, color: "#d04e00"]
 						])
 			}
-            tileAttribute ("device.liters", key: "SECONDARY_CONTROL") {
+            tileAttribute ("device.feet", key: "SECONDARY_CONTROL") {
         		attributeState "power", label:'Height: ${currentValue} feet', icon: "http://cdn.device-icons.smartthings.com/Bath/bath6-icn@2x.png"
             }
         }
@@ -50,8 +50,8 @@ metadata {
     }
 
     preferences {
-        input name: "height", type: "number", title: "Height", description: "Enter height of then sensor", required: true
-        input name: "offset", type: "number", title: "Offset", description: "Enter offset in inches", required: true
+        input name: "height", type: "number", title: "Height", description: "Enter height of the sensor (inches)", required: true
+        input name: "offset", type: "number", title: "Offset", description: "Enter offset (inches)", required: true
     }
 }
 
@@ -61,7 +61,7 @@ def parse(String description) {
     def name  = parts.length>0?parts[0].trim():null
     def value = parts.length>1?parts[1].trim():null
     if (name && value) {
-        double sensorValue = value as float
+        float sensorValue = value as float
         def inches = height - sensorValue * 0.393701
         float feet = inches / 12.0
         sendEvent(name: "feet", value: feet)

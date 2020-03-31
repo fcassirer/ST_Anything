@@ -61,7 +61,7 @@ def parse(String description) {
     def name  = parts.length>0?parts[0].trim():null
     def value = parts.length>1?parts[1].trim():null
     if (name && value) {
-        double sensorValue = value as float
+        float sensorValue = value as float
         def inches = height - sensorValue * 0.393701
         float feet = inches / 12.0
         sendEvent(name: "feet", value: feet)
