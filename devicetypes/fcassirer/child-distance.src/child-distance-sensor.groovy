@@ -22,7 +22,7 @@
  *
  */
 metadata {
-	definition (name: "Child Ultrasonic Sensor", namespace: "ogiewon", author: "Daniel Ogorchock") {
+	definition (name: "Child Distance Sensor", namespace: "fcassirer", author: "Fred Cassirer") {
 		capability "Sensor"
 
 		attribute "lastUpdated", "String"
@@ -30,9 +30,9 @@ metadata {
     }
 
 	tiles(scale: 2) {
-		multiAttributeTile(name: "ultrasonic", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-			tileAttribute("device.ultrasonic", key: "PRIMARY_CONTROL") {
-				attributeState("ultrasonic", label: '${currentValue}%', unit:"%", defaultState: true,
+		multiAttributeTile(name: "distance", type: "generic", width: 6, height: 4, canChangeIcon: true) {
+			tileAttribute("device.distance", key: "PRIMARY_CONTROL") {
+				attributeState("distance", label: '${currentValue}%', unit:"%", defaultState: true,
 						backgroundColors: [
 							[value: 80, color: "#767676"],
 							[value: 50, color: "#ffa81e"],
