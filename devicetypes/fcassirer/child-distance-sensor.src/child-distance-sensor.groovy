@@ -1,5 +1,5 @@
 /**
- *  Child Ultrasonic Sensor
+ *  Child Distance Sensor
  *
  *  Copyright 2017 Daniel Ogorchock
  *
@@ -16,6 +16,7 @@
  *
  *    Date        Who            What
  *    ----        ---            ----
+ *    2020-03-30  Fred Cassirer  Modified from Ultrasonic sensor for simple distance
  *    2018-06-02  Dan Ogorchock  Revised/Simplified for Hubitat Composite Driver Model
  *
  *
@@ -40,7 +41,7 @@ metadata {
 						])
 			}
             tileAttribute ("device.liters", key: "SECONDARY_CONTROL") {
-        		attributeState "power", label:'Water capacity: ${currentValue} liters', icon: "http://cdn.device-icons.smartthings.com/Bath/bath6-icn@2x.png"
+        		attributeState "power", label:'Height: ${currentValue} feet', icon: "http://cdn.device-icons.smartthings.com/Bath/bath6-icn@2x.png"
             }
         }
  		valueTile("lastUpdated", "device.lastUpdated", inactiveLabel: false, decoration: "flat", width: 6, height: 2) {
@@ -49,8 +50,8 @@ metadata {
     }
 
     preferences {
-        input name: "height", type: "number", title: "Height", description: "Enter height of tank in cm", required: true
-        input name: "diameter", type: "number", title: "Diameter", description: "Enter diameter of tank", required: true
+        input name: "height", type: "number", title: "Height", description: "Enter height of then sensor", required: true
+        input name: "offset", type: "number", title: "Offset", description: "Enter offset in inches", required: true
     }
 }
 
@@ -61,16 +62,11 @@ def parse(String description) {
     def value = parts.length>1?parts[1].trim():null
     if (name && value) {
         double sensorValue = value as float
-        def volume = 3.14159 * (diameter/2) * (diameter/2) * height
-        double capacityLiters = volume / 1000 * 2
-        capacityLiters = capacityLiters.round(2)
-        sendEvent(name: "liters", value: capacityLiters)
-        double capacityValue = 100 - (sensorValue/height * 100 )
-        if(capacityValue != 100)
-        {
-            capacityValue = capacityValue.round(2)
-            sendEvent(name: name, value: capacityValue)
-        }
+        def inches = height - sensorValue * 0.393701
+        float feet = inches / 12.0
+        sendEvent(name: "feet", value: feet)
+        sendEvent(name: name, value: inches)
+
         // Update lastUpdated date and time
         def nowDay = new Date().format("MMM dd", location.timeZone)
         def nowTime = new Date().format("h:mm a", location.timeZone)
