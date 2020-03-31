@@ -33,7 +33,7 @@ metadata {
 	tiles(scale: 2) {
 		multiAttributeTile(name: "distance", type: "generic", width: 6, height: 4, canChangeIcon: true) {
 			tileAttribute("device.distance", key: "PRIMARY_CONTROL") {
-				attributeState("distance", label: '${currentValue}%', unit:"cm", defaultState: true,
+				attributeState("distance", label: '${currentValue} in', unit:"in", defaultState: true,
 						backgroundColors: [
 							[value: 80, color: "#767676"],
 							[value: 50, color: "#ffa81e"],
@@ -41,7 +41,7 @@ metadata {
 						])
 			}
             tileAttribute ("device.feet", key: "SECONDARY_CONTROL") {
-        		attributeState "power", label:'Height: ${currentValue} feet', icon: "http://cdn.device-icons.smartthings.com/Bath/bath6-icn@2x.png"
+        		attributeState "power", label:'Water is: ${currentValue} feet', icon: "http://cdn.device-icons.smartthings.com/Bath/bath6-icn@2x.png"
             }
         }
  		valueTile("lastUpdated", "device.lastUpdated", inactiveLabel: false, decoration: "flat", width: 6, height: 2) {
@@ -50,8 +50,8 @@ metadata {
     }
 
     preferences {
-        input name: "height", type: "number", title: "Height", description: "Enter height of the sensor (inches)", required: true
-        input name: "offset", type: "number", title: "Offset", description: "Enter offset (inches)", required: true
+        input name: "height", type: "number", title: "Height", description: "Enter height of the sensor (inches)", required: false
+        input name: "offset", type: "number", title: "Offset", description: "Enter offset (inches)", required: false
     }
 }
 
@@ -61,11 +61,22 @@ def parse(String description) {
     def name  = parts.length>0?parts[0].trim():null
     def value = parts.length>1?parts[1].trim():null
     if (name && value) {
+        
         float sensorValue = value as float
-        def inches = height - sensorValue * 0.393701
+        log.debug("Value is " + sensorValue)
+        log.debug("height is $height")
+        float inc = sensorValue * 0.393701
+        float inches = 0.0
+        if (height) {
+           inches = h - inc
+        } else {
+           inches = inc
+        }
+        log.debug("inc is " + inc)
+       
         float feet = inches / 12.0
-        sendEvent(name: "feet", value: feet)
-        sendEvent(name: name, value: inches)
+        sendEvent(name: "feet", value: String.format("%.2f",feet))
+        sendEvent(name: name, value: String.format("%.2f", inches))
 
         // Update lastUpdated date and time
         def nowDay = new Date().format("MMM dd", location.timeZone)
