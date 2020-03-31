@@ -31,7 +31,7 @@ metadata {
     }
 
 	tiles(scale: 2) {
-		multiAttributeTile(name: "distance", type: "distance", width: 6, height: 4, canChangeIcon: true) {
+		multiAttributeTile(name: "distance", type: "generic", width: 6, height: 4, canChangeIcon: true) {
 			tileAttribute("device.distance", key: "PRIMARY_CONTROL") {
 				attributeState("distance", label: '${currentValue}%', unit:"cm", defaultState: true,
 						backgroundColors: [
