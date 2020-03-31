@@ -23,7 +23,7 @@
  *
  */
 metadata {
-	definition (name: "Child Distance Sensor", namespace: "fcassirer", author: "Fred Cassirer") {
+	definition (name: "Child Distance Sensor", namespace: "ogiewon", author: "Fred Cassirer") {
 		capability "Sensor"
 
 		attribute "lastUpdated", "String"
