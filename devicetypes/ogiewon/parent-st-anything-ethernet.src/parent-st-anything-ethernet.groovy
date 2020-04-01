@@ -1,7 +1,7 @@
 /**
  *  Parent_ST_Anything_Ethernet.groovy
  *
- *  Copyright 2017 Dan G Ogorchock 
+ *  Copyright 2017 Dan G Ogorchock
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -38,9 +38,10 @@
  *    2019-02-09  Dan Ogorchock  Attempt to prevent duplicate devices from being created
  *    2019-09-08  Dan Ogorchock  Minor tweak to Button logic due to changes in the the Arduino IS_Button.cpp code
  *    2019-10-31  Dan Ogorchock  Added Child Valve
- *	
+ *    2020-04-01  Fred Cassirer  Added Child distance
+ *
  */
- 
+
 metadata {
 	definition (name: "Parent_ST_Anything_Ethernet", namespace: "ogiewon", author: "Dan Ogorchock") {
         capability "Configuration"
@@ -48,7 +49,7 @@ metadata {
         capability "Button"
         capability "Holdable Button"
         capability "Signal Strength"
-        
+
         command "sendData", ["string"]
 	}
 
@@ -68,7 +69,7 @@ metadata {
 		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
 			state "default", label:'Refresh', action: "refresh.refresh", icon: "st.secondary.refresh-icon"
 		}
-        
+
 		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
 			state "configure", label:'Configure', action:"configuration.configure", icon:"st.secondary.tools"
 		}
@@ -110,13 +111,13 @@ def parse(String description) {
     	def parts = bodyString.split(" ")
     	def name  = parts.length>0?parts[0].trim():null
     	def value = parts.length>1?parts[1].trim():null
-        
+
 		def nameparts = name.split("\\d+", 2)
 		def namebase = nameparts.length>0?nameparts[0].trim():null
         def namenum = name.substring(namebase.length()).trim()
-		
+
         def results = []
-        
+
 		if (name.startsWith("button")) {
 			//log.debug "In parse:  name = ${name}, value = ${value}, btnName = ${name}, btnNum = ${namemun}"
             if ((value == "pushed") || (value == "held")) {
@@ -135,7 +136,7 @@ def parse(String description) {
 
 
         def isChild = containsDigit(name)
-   		//log.debug "Name = ${name}, isChild = ${isChild}, namebase = ${namebase}, namenum = ${namenum}"      
+   		//log.debug "Name = ${name}, isChild = ${isChild}, namebase = ${namebase}, namenum = ${namenum}"
         //log.debug "parse() childDevices.size() =  ${childDevices.size()}"
 
 		def childDevice = null
@@ -154,12 +155,12 @@ def parse(String description) {
             	//log.debug e
             	}
         	}
-            
-            //If a child should exist, but doesn't yet, automatically add it!            
+
+            //If a child should exist, but doesn't yet, automatically add it!
         	if (isChild && childDevice == null) {
         		log.debug "isChild = true, but no child found - Auto Add it!"
             	//log.debug "    Need a ${namebase} with id = ${namenum}"
-            
+
             	createChildDevice(namebase, namenum)
             	//find child again, since it should now exist!
             	childDevices.each {
@@ -175,7 +176,7 @@ def parse(String description) {
             		}
         		}
         	}
-            
+
             if (childDevice != null) {
                 //log.debug "parse() found child device ${childDevice.deviceNetworkId}"
                 childDevice.parse("${namebase} ${value}")
@@ -198,13 +199,13 @@ def parse(String description) {
 private getHostAddress() {
     def ip = settings.ip
     def port = settings.port
-    
+
     log.debug "Using ip: ${ip} and port: ${port} for device: ${device.id}"
     return ip + ":" + port
 }
 
 def sendData(message) {
-    sendEthernet(message) 
+    sendEthernet(message)
 }
 
 def sendEthernet(message) {
@@ -218,7 +219,7 @@ def sendEthernet(message) {
     }
     else {
         state.alertMessage = "ST_Anything Parent Device has not yet been fully configured. Click the 'Gear' icon, enter data for all fields, and click 'Done'"
-        runIn(2, "sendAlert")   
+        runIn(2, "sendAlert")
     }
 }
 
@@ -283,102 +284,104 @@ def updateDeviceNetworkID() {
 
 private void createChildDevice(String deviceName, String deviceNumber) {
     if ( device.deviceNetworkId =~ /^[A-Z0-9]{12}$/) {
-    
+
 		log.trace "createChildDevice:  Creating Child Device '${device.displayName} (${deviceName}${deviceNumber})'"
-        
+
 		try {
         	def deviceHandlerName = ""
         	switch (deviceName) {
-         		case "contact": 
-                		deviceHandlerName = "Child Contact Sensor" 
+         		case "contact":
+                		deviceHandlerName = "Child Contact Sensor"
                 	break
-         		case "switch": 
-                		deviceHandlerName = "Child Switch" 
+         		case "switch":
+                		deviceHandlerName = "Child Switch"
                 	break
-         		case "dimmerSwitch": 
-                		deviceHandlerName = "Child Dimmer Switch" 
+         		case "dimmerSwitch":
+                		deviceHandlerName = "Child Dimmer Switch"
                 	break
-         		case "rgbSwitch": 
-                		deviceHandlerName = "Child RGB Switch" 
+         		case "rgbSwitch":
+                		deviceHandlerName = "Child RGB Switch"
                 	break
-         		case "generic": 
-                		deviceHandlerName = "Child Generic Sensor" 
+         		case "generic":
+                		deviceHandlerName = "Child Generic Sensor"
                 	break
-         		case "rgbwSwitch": 
-                		deviceHandlerName = "Child RGBW Switch" 
+         		case "rgbwSwitch":
+                		deviceHandlerName = "Child RGBW Switch"
                 	break
-         		case "relaySwitch": 
-                		deviceHandlerName = "Child Relay Switch" 
+         		case "relaySwitch":
+                		deviceHandlerName = "Child Relay Switch"
                 	break
-         		case "temperature": 
-                		deviceHandlerName = "Child Temperature Sensor" 
+         		case "temperature":
+                		deviceHandlerName = "Child Temperature Sensor"
                 	break
-         		case "humidity": 
-                		deviceHandlerName = "Child Humidity Sensor" 
+         		case "humidity":
+                		deviceHandlerName = "Child Humidity Sensor"
                 	break
-         		case "motion": 
-                		deviceHandlerName = "Child Motion Sensor" 
+         		case "motion":
+                		deviceHandlerName = "Child Motion Sensor"
                 	break
-         		case "water": 
-                		deviceHandlerName = "Child Water Sensor" 
+         		case "water":
+                		deviceHandlerName = "Child Water Sensor"
                 	break
-         		case "illuminance": 
-                		deviceHandlerName = "Child Illuminance Sensor" 
+         		case "illuminance":
+                		deviceHandlerName = "Child Illuminance Sensor"
                 	break
-         		case "illuminancergb": 
-                		deviceHandlerName = "Child IlluminanceRGB Sensor" 
+         		case "illuminancergb":
+                		deviceHandlerName = "Child IlluminanceRGB Sensor"
                 	break
-         		case "voltage": 
-                		deviceHandlerName = "Child Voltage Sensor" 
+         		case "voltage":
+                		deviceHandlerName = "Child Voltage Sensor"
                 	break
-         		case "smoke": 
-                		deviceHandlerName = "Child Smoke Detector" 
-                	break    
-         		case "carbonMonoxide": 
-                		deviceHandlerName = "Child Carbon Monoxide Detector" 
-                	break    
-         		case "alarm": 
-                		deviceHandlerName = "Child Alarm" 
-                	break    
-         		case "doorControl": 
-                		deviceHandlerName = "Child Door Control" 
+         		case "smoke":
+                		deviceHandlerName = "Child Smoke Detector"
                 	break
-         		case "ultrasonic": 
-                		deviceHandlerName = "Child Ultrasonic Sensor" 
+         		case "carbonMonoxide":
+                		deviceHandlerName = "Child Carbon Monoxide Detector"
                 	break
-         		case "presence": 
-                		deviceHandlerName = "Child Presence Sensor" 
+         		case "alarm":
+                		deviceHandlerName = "Child Alarm"
                 	break
-         		case "power": 
-                		deviceHandlerName = "Child Power Meter" 
+         		case "doorControl":
+                		deviceHandlerName = "Child Door Control"
                 	break
-         		case "energy": 
-                		deviceHandlerName = "Child Energy Meter" 
+         		case "ultrasonic":
+                		deviceHandlerName = "Child Ultrasonic Sensor"
+         		case "distance":
+                		deviceHandlerName = "Child Distance Sensor"
                 	break
-         		case "servo": 
-                		deviceHandlerName = "Child Servo" 
+         		case "presence":
+                		deviceHandlerName = "Child Presence Sensor"
                 	break
-         		case "pressure": 
-                		deviceHandlerName = "Child Pressure Measurement" 
+         		case "power":
+                		deviceHandlerName = "Child Power Meter"
                 	break
-         		case "valve": 
-                		deviceHandlerName = "Child Valve" 
-                	break        
-			default: 
+         		case "energy":
+                		deviceHandlerName = "Child Energy Meter"
+                	break
+         		case "servo":
+                		deviceHandlerName = "Child Servo"
+                	break
+         		case "pressure":
+                		deviceHandlerName = "Child Pressure Measurement"
+                	break
+         		case "valve":
+                		deviceHandlerName = "Child Valve"
+                	break
+			default:
                 		log.error "No Child Device Handler case for ${deviceName}"
       		}
             if ((deviceHandlerName != "") && (state.lastChildCreated != "${device.deviceNetworkId}-${deviceName}${deviceNumber}")) {
                 addChildDevice(deviceHandlerName, "${device.deviceNetworkId}-${deviceName}${deviceNumber}", null,
-         			[completedSetup: true, label: "${device.displayName} (${deviceName}${deviceNumber})", 
+         			[completedSetup: true, label: "${device.displayName} (${deviceName}${deviceNumber})",
                 	isComponent: false, componentName: "${deviceName}${deviceNumber}", componentLabel: "${deviceName} ${deviceNumber}"])
                 state.lastChildCreated = "${device.deviceNetworkId}-${deviceName}${deviceNumber}"
-        	}   
+        	}
     	} catch (e) {
         	log.error "Child device creation failed with error = ${e}"
         	state.alertMessage = "Child device creation failed. Please make sure that the '${deviceHandlerName}' is installed and published."
 	    	runIn(2, "sendAlert")
     	}
-	} else 
+	} else
     {
         state.alertMessage = "ST_Anything Parent Device has not yet been fully configured. Click the 'Gear' icon, enter data for all fields, and click 'Done'"
         runIn(2, "sendAlert")
