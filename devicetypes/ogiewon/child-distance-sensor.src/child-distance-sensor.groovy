@@ -68,13 +68,13 @@ def parse(String description) {
     def value = parts.length>1?parts[1].trim():null
     if (name && value) {
 
-        float sensorValue = value as float
+        double sensorValue = value as float
         log.debug("Value is " + sensorValue)
         log.debug("height is $height")
         double inc = sensorValue * 0.393701
         double inches = 0.0
         if (height) {
-           inches = h - inc
+           inches = height - inc
         } else {
            inches = inc
         }
