@@ -1,6 +1,12 @@
 /**
  *  Child Distance Sensor
  *
+ *  Measure distance from the Ultrasonic sensor to a moving target such as a water level or incoming Tide.
+ *  Arguments:
+ *
+ *   height - the height of the sensor in inches
+ *   offset - An offset to add/subtract to allow estimation of depth/height further from the sensor
+ *
  *  Copyright 2017 Daniel Ogorchock
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
@@ -65,8 +71,8 @@ def parse(String description) {
         float sensorValue = value as float
         log.debug("Value is " + sensorValue)
         log.debug("height is $height")
-        float inc = sensorValue * 0.393701
-        float inches = 0.0
+        double inc = sensorValue * 0.393701
+        double inches = 0.0
         if (height) {
            inches = h - inc
         } else {
@@ -74,11 +80,19 @@ def parse(String description) {
         }
         log.debug("inc is " + inc)
 
-        float feet = inches / 12.0
+        // Offset is just a constant provided by the specific sensor.  One use case is
+        // measuring water level (Tide) by a dock but adding (or subtracting) a known delta
+        // for a point further from the sensor, i.e., behind my boat.
+
+        if (offset) {
+            inches = inches + offset
+        }
+
+        double feet = inches / 12.0
         // sendEvent(name: "feet", value: String.format("%.2f",feet))
         // sendEvent(name: name, value: String.format("%.2f", inches))
-        sendEvent(name: "feet", value: feet)
-        sendEvent(name: name, value: inches)
+        sendEvent(name: "feet", value: feet.round(2))
+        sendEvent(name: name, value: inches.round(2))
 
         // Update lastUpdated date and time
         def nowDay = new Date().format("MMM dd", location.timeZone)
