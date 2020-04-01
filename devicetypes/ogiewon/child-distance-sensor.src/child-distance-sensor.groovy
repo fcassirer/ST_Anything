@@ -61,7 +61,7 @@ def parse(String description) {
     def name  = parts.length>0?parts[0].trim():null
     def value = parts.length>1?parts[1].trim():null
     if (name && value) {
-        
+
         float sensorValue = value as float
         log.debug("Value is " + sensorValue)
         log.debug("height is $height")
@@ -73,10 +73,12 @@ def parse(String description) {
            inches = inc
         }
         log.debug("inc is " + inc)
-       
+
         float feet = inches / 12.0
-        sendEvent(name: "feet", value: String.format("%.2f",feet))
-        sendEvent(name: name, value: String.format("%.2f", inches))
+        // sendEvent(name: "feet", value: String.format("%.2f",feet))
+        // sendEvent(name: name, value: String.format("%.2f", inches))
+        sendEvent(name: "feet", value: feet)
+        sendEvent(name: name, value: inches)
 
         // Update lastUpdated date and time
         def nowDay = new Date().format("MMM dd", location.timeZone)
